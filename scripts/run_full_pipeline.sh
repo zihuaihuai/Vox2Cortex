@@ -16,6 +16,7 @@ CONDA_ENV="/data_/mica1/03_projects/enning/conda_envs/vox2cortex"
 # Tool paths
 FREESURFER_HOME="/data/mica1/01_programs/freesurfer-7.4.1"
 ANTS_DIR="/data/mica1/01_programs/ants-2.3.4/bin"
+export ANTSPATH="${ANTS_DIR}/"  # ANTs scripts need this
 
 echo "=============================================="
 echo "Vox2Cortex Test Data Preparation Pipeline"

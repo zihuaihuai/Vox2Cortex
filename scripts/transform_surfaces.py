@@ -29,7 +29,7 @@ def read_ants_affine(mat_file):
                 fixed_params = mat_data.get('fixed', np.zeros((3, 1))).flatten()
             else:
                 raise ValueError(f"Unknown ANTs mat format: {list(mat_data.keys())}")
-        except:
+        except Exception:
             # Try reading with h5py for HDF5 format
             import h5py
             with h5py.File(mat_file, 'r') as f:

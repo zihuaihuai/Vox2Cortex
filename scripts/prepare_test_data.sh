@@ -56,7 +56,7 @@ ${ANTS_DIR}/antsApplyTransforms \
 
 echo "=== Step 4: Convert and transform surfaces ==="
 SURFACES=("lh.pial" "lh.white" "rh.pial" "rh.white")
-SURF_NAMES=("lh_pial" "rh_pial" "lh_white" "rh_white")
+SURF_NAMES=("lh_pial" "lh_white" "rh_pial" "rh_white")
 
 for i in ${!SURFACES[@]}; do
     surf=${SURFACES[$i]}

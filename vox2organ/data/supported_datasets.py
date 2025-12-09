@@ -21,6 +21,7 @@ class SupportedDatasets(IntEnum):
     ADNI_CSR_large = 4
     AbdomenCT_1K = 22
     AbdomenMRI = 23
+    BIDS_PNI_test = 100  # Test dataset for bb-compxg-01
 
 class AbdomenCTDatasets(IntEnum):
     """ List abdominal datasets """
@@ -33,6 +34,7 @@ class AbdomenMRIDatasets(IntEnum):
 class CortexDatasets(IntEnum):
     """ List cortex datasets """
     ADNI_CSR_large = SupportedDatasets.ADNI_CSR_large.value
+    BIDS_PNI_test = SupportedDatasets.BIDS_PNI_test.value  # Test dataset
 
 
 dataset_paths = {
@@ -59,5 +61,12 @@ dataset_paths = {
         'FIXED_SPLIT': ["ADNI_large_train_qc_pass.txt",
                         "ADNI_large_val_qc_pass.txt",
                         "ADNI_large_test_qc_pass.txt"], # Read from files
+    },
+    # Test dataset for bb-compxg-01 (BIDS_PNI data)
+    SupportedDatasets.BIDS_PNI_test.name: {
+        'RAW_DATA_DIR': "/export03/data/enning/vox2cortex_test/",
+        'FIXED_SPLIT': ["test_ids.txt",
+                        "test_ids.txt",
+                        "test_ids.txt"], # Use same file for all splits
     },
 }

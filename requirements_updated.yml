@@ -1,0 +1,83 @@
+# =============================================================================
+# Vox2Cortex Environment - Minimal Dependencies for bb-compxg-01
+# =============================================================================
+# This is a simplified environment file for easier dependency resolution.
+# Server: bb-compxg-01 (BIC McGill)
+# GPUs: 8x NVIDIA RTX A6000, Driver 580.95.05, CUDA 12.6
+#
+# Usage:
+#   conda env create -f requirements_updated.yml
+#   conda activate vox2cortex
+#   # Then run: ./setup_pytorch3d.sh to install the pytorch3d fork
+# =============================================================================
+name: vox2cortex
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  # Core Python
+  - python=3.9
+  
+  # PyTorch ecosystem (CUDA 12.1 for compatibility with 12.6 toolkit)
+  - pytorch=2.1.2
+  - torchvision=0.16.2
+  - torchaudio=2.1.2
+  - pytorch-cuda=12.1
+  
+  # Scientific computing
+  - numpy>=1.21,<2.0
+  - scipy>=1.7
+  - pandas>=1.4
+  - scikit-learn>=1.0
+  - scikit-image>=0.19
+  - matplotlib>=3.5
+  
+  # Medical imaging
+  - nibabel>=3.2
+  - h5py>=3.6
+  - pillow>=9.0
+  
+  # Graph/Network tools
+  - networkx>=2.7
+  
+  # Utilities
+  - tqdm>=4.64
+  - pyyaml>=6.0
+  - ipdb
+  - joblib
+  
+  # Build tools (for pytorch3d)
+  - ninja
+  - cmake
+  
+  # Development
+  - pip
+  
+  - pip:
+    # Medical imaging
+    - monai>=0.8.1
+    - torchio>=0.18
+    - pydicom>=2.3
+    - SimpleITK>=2.0
+    
+    # Mesh processing
+    - trimesh>=3.10
+    - pymeshlab>=2022.2
+    
+    # Deep learning utilities
+    - fvcore>=0.1.5
+    - iopath>=0.1.9
+    - elasticdeform>=0.4.9
+    - geomloss>=0.2.5
+    - torchdiffeqpack>=1.0.1
+    
+    # Logging and experiment tracking
+    - wandb>=0.12
+    
+    # Miscellaneous
+    - tabulate>=0.8
+    - termcolor>=1.1
+    - yacs>=0.1.8
+    - portalocker>=2.4

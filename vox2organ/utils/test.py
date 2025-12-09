@@ -221,9 +221,10 @@ def test_routine(hps: dict, resume=False):
                 os.path.join(test_dir, f"eval_results_epoch_{epoch}.csv"),
                 index=False
             )
+            # Select only numeric columns for mean calculation
             results_summary = results.groupby(
                 ['Metric', 'Tissue']
-            ).mean().reset_index()
+            ).mean(numeric_only=True).reset_index()
             results_summary.to_csv(
                 os.path.join(
                     test_dir,
@@ -232,7 +233,7 @@ def test_routine(hps: dict, resume=False):
                 index=False
             )
             log.info("Summary of evaluation:")
-            log.info(results_summary.groupby('Metric').mean())
+            log.info(results_summary.groupby('Metric').mean(numeric_only=True))
             log.info("For detailed output see " + test_dir)
 
             try:

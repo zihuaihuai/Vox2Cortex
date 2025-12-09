@@ -115,7 +115,7 @@ class ModelEvaluator:
             if run_model:
                 # Generate prediction and store
                 input_img = nib.Nifti1Image(
-                    data["img"].cpu().numpy(),
+                    data["img"].cpu().numpy().astype(np.float32),
                     np.eye(4)
                 )
                 if logger.debug():
@@ -127,7 +127,7 @@ class ModelEvaluator:
                         )
                     )
                 voxel_label = nib.Nifti1Image(
-                    data["voxel_label"].cpu().numpy(),
+                    data["voxel_label"].cpu().numpy().astype(np.int32),
                     np.eye(4)
                 )
                 if logger.debug():
@@ -296,7 +296,7 @@ class ModelEvaluator:
                 os.remove(seg)
         if voxel_pred is not None:
             pred_nifti = nib.Nifti1Image(
-                voxel_pred.cpu().numpy(),
+                voxel_pred.cpu().numpy().astype(np.int32),
                 self._dataset.image_affine(index),
             )
             nii_fn = os.path.join(subdir, f"pred_epoch_{epoch}.nii.gz")

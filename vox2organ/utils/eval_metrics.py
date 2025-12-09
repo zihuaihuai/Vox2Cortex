@@ -159,10 +159,25 @@ class SelfIntersections(EvalMetric):
 
             ms = pyml.MeshSet()
             ms.add_mesh(pyml.Mesh(pred_v.cpu().numpy(), pred_f.cpu().numpy()))
-            faces = ms.compute_topological_measures()['faces_number']
-            ms.select_self_intersecting_faces()
-            ms.delete_selected_faces()
-            nnSI_faces = ms.compute_topological_measures()['faces_number']
+            # pymeshlab API changed: compute_topological_measures -> get_topological_measures
+            try:
+                faces = ms.get_topological_measures()['faces_number']
+            except AttributeError:
+                faces = ms.compute_topological_measures()['faces_number']
+            # pymeshlab API changed: select_self_intersecting_faces -> compute_selection_by_self_intersections_per_face
+            try:
+                ms.compute_selection_by_self_intersections_per_face()
+            except AttributeError:
+                ms.select_self_intersecting_faces()
+            # pymeshlab API changed: delete_selected_faces -> meshing_remove_selected_faces
+            try:
+                ms.meshing_remove_selected_faces()
+            except AttributeError:
+                ms.delete_selected_faces()
+            try:
+                nnSI_faces = ms.get_topological_measures()['faces_number']
+            except AttributeError:
+                nnSI_faces = ms.compute_topological_measures()['faces_number']
             SI_faces = faces-nnSI_faces
             fracSI = (SI_faces/faces)*100
 

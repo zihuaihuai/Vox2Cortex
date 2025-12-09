@@ -169,7 +169,11 @@ class SelfIntersections(EvalMetric):
                 ms.compute_selection_by_self_intersections_per_face()
             except AttributeError:
                 ms.select_self_intersecting_faces()
-            ms.delete_selected_faces()
+            # pymeshlab API changed: delete_selected_faces -> meshing_remove_selected_faces
+            try:
+                ms.meshing_remove_selected_faces()
+            except AttributeError:
+                ms.delete_selected_faces()
             try:
                 nnSI_faces = ms.get_topological_measures()['faces_number']
             except AttributeError:

@@ -223,8 +223,3 @@ export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
 - **Inference Time**: ~20 seconds per subject
 - **Memory Usage**: ~8GB GPU memory per subject
 - **Batch Size**: Currently set to 1 (single subject processing)
-
-## Support
-
-For issues specific to the MICA server setup, contact the system administrators or check the original Vox2Cortex repository for updates.</content>
-<parameter name="filePath">/Users/enningyang/CodeProj/Vox2Cortex/MICA_SETUP_GUIDE.md

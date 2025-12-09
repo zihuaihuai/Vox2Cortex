@@ -296,7 +296,7 @@ class ModelEvaluator:
                 os.remove(seg)
         if voxel_pred is not None:
             pred_nifti = nib.Nifti1Image(
-                voxel_pred.cpu().numpy(),
+                voxel_pred.cpu().numpy().astype(np.int32),
                 self._dataset.image_affine(index),
             )
             nii_fn = os.path.join(subdir, f"pred_epoch_{epoch}.nii.gz")

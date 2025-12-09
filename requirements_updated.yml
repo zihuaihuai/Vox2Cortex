@@ -27,7 +27,7 @@ dependencies:
   - pytorch-cuda=12.1
   
   # Scientific computing
-  - numpy>=1.21,<1.25
+  - numpy>=1.21,<2.0
   - scipy>=1.7
   - pandas>=1.4
   - scikit-learn>=1.0

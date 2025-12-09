@@ -64,7 +64,7 @@ dataset_paths = {
     },
     # Test dataset for bb-compxg-01 (BIDS_PNI data)
     SupportedDatasets.BIDS_PNI_test.name: {
-        'RAW_DATA_DIR': "/data_/mica1/03_projects/enning/vox2cortex_test/",
+        'RAW_DATA_DIR': "/export03/data/enning/vox2cortex_test/",
         'FIXED_SPLIT': ["test_ids.txt",
                         "test_ids.txt",
                         "test_ids.txt"], # Use same file for all splits

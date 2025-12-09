@@ -19,11 +19,25 @@ cd Vox2Cortex
 ```
 
 ### 2. Set Up Conda Environment
+
+**Option A: Use Existing Environment (Recommended)**
 ```bash
-# Create and activate conda environment
+# Try to activate the existing environment
 source ~/miniconda3/etc/profile.d/conda.sh
-conda create -p /data_/mica1/03_projects/enning/conda_envs/vox2cortex python=3.9 -y
 conda activate /data_/mica1/03_projects/enning/conda_envs/vox2cortex
+
+# Test if activation worked
+python --version
+```
+
+If the activation succeeds, skip to step 3. If you get a permission error or the environment doesn't exist, use Option B.
+
+**Option B: Create Your Own Environment**
+```bash
+# Create environment in your own directory
+source ~/miniconda3/etc/profile.d/conda.sh
+conda create -p ~/conda_envs/vox2cortex python=3.9 -y
+conda activate ~/conda_envs/vox2cortex
 
 # Install PyTorch with CUDA support
 conda install pytorch=2.1.2 torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia -y
@@ -45,10 +59,13 @@ bash setup_pytorch3d.sh
 
 ### 4. Verify Installation
 ```bash
+# Set your environment path (choose based on Option A or B above)
+export VOX2CORTEX_ENV="/data_/mica1/03_projects/enning/conda_envs/vox2cortex"  # or ~/conda_envs/vox2cortex
+
 # Test basic functionality
 cd ~/Documents/Vox2Cortex/vox2organ
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate /data_/mica1/03_projects/enning/conda_envs/vox2cortex
+conda activate $VOX2CORTEX_ENV
 python main.py --help
 ```
 
@@ -87,9 +104,12 @@ bash scripts/run_full_pipeline.sh /path/to/bids/dataset/sub-{subject}_ses-{sessi
 
 ### Quick Test with Preprocessed Data
 ```bash
+# Set your environment path
+export VOX2CORTEX_ENV="/data_/mica1/03_projects/enning/conda_envs/vox2cortex"  # or ~/conda_envs/vox2cortex
+
 # Activate environment
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate /data_/mica1/03_projects/enning/conda_envs/vox2cortex
+conda activate $VOX2CORTEX_ENV
 
 # Run inference on test subject
 cd ~/Documents/Vox2Cortex/vox2organ
@@ -141,9 +161,12 @@ echo "sub-002_ses-01" >> /path/to/your/data/your_ids.txt
 
 ### 3. Run Inference
 ```bash
+# Set your environment path
+export VOX2CORTEX_ENV="/data_/mica1/03_projects/enning/conda_envs/vox2cortex"  # or ~/conda_envs/vox2cortex
+
 # Activate environment
 source ~/miniconda3/etc/profile.d/conda.sh
-conda activate /data_/mica1/03_projects/enning/conda_envs/vox2cortex
+conda activate $VOX2CORTEX_ENV
 
 # Run on your dataset
 cd ~/Documents/Vox2Cortex/vox2organ
@@ -187,7 +210,9 @@ export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
 ## File Locations (MICA Server)
 
 - **Code**: `~/Documents/Vox2Cortex/`
-- **Conda Environment**: `/data_/mica1/03_projects/enning/conda_envs/vox2cortex`
+- **Conda Environment**:
+  - Shared: `/data_/mica1/03_projects/enning/conda_envs/vox2cortex` (if accessible)
+  - Personal: `~/conda_envs/vox2cortex` (create your own if needed)
 - **Test Data**: `/data_/mica1/03_projects/enning/vox2cortex_test/`
 - **Pretrained Models**: `~/Documents/Vox2Cortex/vox2organ/pretrained_models/V2C-Flow-S-ADNI/`
 - **Raw BIDS Data**: `/data/mica3/BIDS_PNI/`

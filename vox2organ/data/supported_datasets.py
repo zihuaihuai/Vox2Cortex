@@ -77,10 +77,16 @@ dataset_paths = {
             "VOX2CORTEX_V2V_DATA_ROOT",
             "trainingdata"
         ),
-        'FIXED_SPLIT': [
-            "v2v_vox2cortex_train_ids.txt",
-            "v2v_vox2cortex_val_ids.txt",
-            "v2v_vox2cortex_test_ids.txt",
-        ],
+        'FIXED_SPLIT': (
+            [
+                os.path.join(os.environ["VOX2CORTEX_V2V_SPLIT_DIR"], "v2v_vox2cortex_train_ids.txt"),
+                os.path.join(os.environ["VOX2CORTEX_V2V_SPLIT_DIR"], "v2v_vox2cortex_val_ids.txt"),
+                os.path.join(os.environ["VOX2CORTEX_V2V_SPLIT_DIR"], "v2v_vox2cortex_test_ids.txt"),
+            ] if "VOX2CORTEX_V2V_SPLIT_DIR" in os.environ else [
+                "v2v_vox2cortex_train_ids.txt",
+                "v2v_vox2cortex_val_ids.txt",
+                "v2v_vox2cortex_test_ids.txt",
+            ]
+        ),
     },
 }

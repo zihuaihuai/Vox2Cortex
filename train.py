@@ -135,7 +135,7 @@ def discover_v2v_ids(training_root: Path, cfg: dict[str, Any]) -> list[str]:
 
 def write_split_files(
     ids: list[str],
-    root: Path,
+    split_dir: Path,
     split_ratio: tuple[int, int, int],
     seed: int,
     split_files: list[str],
@@ -170,8 +170,9 @@ def write_split_files(
     val_ids = shuffled[n_train:n_train + n_val]
     test_ids = shuffled[n_train + n_val:n_train + n_val + n_test]
 
+    split_dir.mkdir(parents=True, exist_ok=True)
     for fn, subset in zip(split_files, (train_ids, val_ids, test_ids)):
-        with open(root / fn, "w", encoding="utf-8") as f:
+        with open(split_dir / fn, "w", encoding="utf-8") as f:
             for sid in subset:
                 f.write(sid + "\n")
 
@@ -215,6 +216,15 @@ def main() -> int:
     if not training_root.exists():
         raise FileNotFoundError(f"training_root not found: {training_root}")
 
+    # Split files may need a writable location different from training_root.
+    split_dir_cfg = v2c_cfg.get("split_dir", None)
+    if split_dir_cfg is None:
+        split_dir = training_root
+    else:
+        split_dir = Path(str(split_dir_cfg)).expanduser()
+        if not split_dir.is_absolute():
+            split_dir = (config_path.parent / split_dir).resolve()
+
     split_seed = int(v2c_cfg.get("split_seed", train_cfg.get("seed", 1337)))
     split_ratio_cfg = v2c_cfg.get("split_ratio", [80, 10, 10])
     split_ratio = (int(split_ratio_cfg[0]), int(split_ratio_cfg[1]), int(split_ratio_cfg[2]))
@@ -224,8 +234,17 @@ def main() -> int:
     if len(ids) < 3:
         raise RuntimeError("Need at least 3 discovered samples to create train/val/test splits.")
 
-    n_train, n_val, n_test = write_split_files(ids, training_root, split_ratio, split_seed, split_files)
-    print(f"Wrote split files: train={n_train}, val={n_val}, test={n_test}")
+    try:
+        n_train, n_val, n_test = write_split_files(ids, split_dir, split_ratio, split_seed, split_files)
+    except PermissionError:
+        fallback_split_dir = (repo_root / "splits").resolve()
+        print(
+            f"Permission denied writing split files to {split_dir}. "
+            f"Falling back to {fallback_split_dir}."
+        )
+        split_dir = fallback_split_dir
+        n_train, n_val, n_test = write_split_files(ids, split_dir, split_ratio, split_seed, split_files)
+    print(f"Wrote split files in {split_dir}: train={n_train}, val={n_val}, test={n_test}")
 
     group = str(v2c_cfg.get("group", "V2C-Flow-S"))
     device_list = _as_device_list(v2c_cfg.get("device", "cuda:0"))
@@ -261,6 +280,7 @@ def main() -> int:
 
     env = os.environ.copy()
     env["VOX2CORTEX_V2V_DATA_ROOT"] = str(training_root)
+    env["VOX2CORTEX_V2V_SPLIT_DIR"] = str(split_dir)
     env["VOX2CORTEX_MAX_VRAM_GB"] = str(max_vram_gb)
 
     print("Running:", " ".join(cmd))

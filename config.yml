@@ -75,6 +75,9 @@ vox2cortex:
   experiment_base_dir: "../experiments"
   device: "cuda:0"
   max_vram_gb: 48
+  # Optional writable location for split files if training_root is read-only.
+  # If unset, split files are written into training_root.
+  split_dir: "./splits"
   run_test_after_train: true
   split_ratio: [80, 10, 10]
   split_seed: 1337

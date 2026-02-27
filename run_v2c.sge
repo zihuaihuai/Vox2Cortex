@@ -37,8 +37,21 @@ export PYTHONUNBUFFERED=1
 # ===== Env =====
 source /host/cassio/export03/data/opt/miniconda3/bin/activate v2v2_vox2cortex
 
-# Ensure torch CUDA libs are visible for pytorch3d C++ extension loading
-export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$CONDA_PREFIX/lib/python3.9/site-packages/torch/lib:${LD_LIBRARY_PATH}"
+# Ensure torch + pip CUDA runtime libs are visible for pytorch3d C++ extension loading
+TORCH_LIB="$CONDA_PREFIX/lib/python3.9/site-packages/torch/lib"
+NVIDIA_LIBS=$(python - <<'PY'
+import os, glob, site
+dirs = []
+for sp in site.getsitepackages():
+    dirs.extend(sorted(glob.glob(os.path.join(sp, "nvidia", "*", "lib"))))
+print(":".join(dirs))
+PY
+)
+if [ -n "$NVIDIA_LIBS" ]; then
+  export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$TORCH_LIB:$NVIDIA_LIBS:${LD_LIBRARY_PATH}"
+else
+  export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$TORCH_LIB:${LD_LIBRARY_PATH}"
+fi
 
 # ===== Vox2Cortex data/split paths =====
 # Read-only training data from voxels2vertices svf export

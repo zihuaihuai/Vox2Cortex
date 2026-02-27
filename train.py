@@ -240,6 +240,7 @@ def _preflight_or_exit(repo_root: Path) -> None:
             "  2) Reinstall pytorch3d against that torch (prefer source build of fabibo3 fork).",
             "  3) Ensure LD_LIBRARY_PATH contains:",
             "       $CONDA_PREFIX/lib:$CONDA_PREFIX/lib/python3.9/site-packages/torch/lib",
+            "       and if using pip torch, also site-packages/nvidia/*/lib paths.",
         ]
         if wheel_path.exists():
             msg.append(f"  Optional quick test wheel: pip install {wheel_path}")

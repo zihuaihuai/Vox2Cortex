@@ -1,0 +1,84 @@
+paths:
+  training_root: "trainingdata"
+  refsurfs_dir: "refsurfs"
+  checkpoints_dir: "checkpoints"
+  train_log_csv: "train_log.csv"
+
+dist:
+  backend: "nccl"
+
+data:
+  batch_size: 4
+  workers: 8
+  prefetch_factor: 2
+  shuffle_single_gpu: true
+  volume_glob: "*_hemi-L*.nii.gz"
+  stem_suffix_left: "_hemi-L"
+  stem_suffix_right_to_left: "_hemi-LfromR"
+  hemi_file_patterns:
+    left:
+      white: "{prefix}_L_fs_white.surf.gii"
+      pial: "{prefix}_L_fs_pial.surf.gii"
+    left_from_right:
+      white: "{prefix}_LfromR_fs_white.surf.gii"
+      pial: "{prefix}_LfromR_fs_pial.surf.gii"
+
+augment:
+  spatial:
+    p_rotate: 0.
+    degrees: [[-5, 5], [-5, 5], [-5, 5]]
+    p_scale: 0.
+    scales:  [[0.95, 1.05], [0.95, 1.05], [0.95, 1.05]]
+    p_translate: 0.
+    translation: [[-2, 2], [-2, 2], [-2, 2]]
+    p_elastic: 0.
+    num_ctrl_pts: 5
+    max_disp: 4.0
+  intensity:
+    p_motion: 0.
+    p_ghost: 0.
+    p_spike: 0.
+    p_bias: 0.
+    p_noise: 0.
+    noise_std_max: 0.05
+    p_blur: 0.
+    blur_std_min: 0.2
+    blur_std_max: 2.0
+    p_gamma: 0.
+    log_gamma_min: -0.3
+    log_gamma_max: 0.3
+
+model:
+  keep_blocks: 12
+  ref_ras_grid: "MNI152_T1_0.6mm_brain_hemi-L.nii.gz"
+
+surfaces:
+  fsL-32k_pial: 32492
+  fsL-32k_white: 32492
+  huL-0p5mm_inner: 7262
+  huL-0p5mm_outer: 7262
+
+train:
+  epochs: 500
+  lr: 1.0e-4
+  debug_every: 10
+  amp: false
+  seed: 1337
+
+logging:
+  level: "INFO"
+
+# Vox2Cortex compatibility layer (used by ./train.py and ./inference.py)
+vox2cortex:
+  group: "V2C-Flow-S"
+  experiment_name: "vox2cortex_v2v"
+  experiment_base_dir: "../experiments"
+  device: "cuda:0"
+  max_vram_gb: 48
+  run_test_after_train: true
+  split_ratio: [80, 10, 10]
+  split_seed: 1337
+  split_files:
+    - "v2v_vox2cortex_train_ids.txt"
+    - "v2v_vox2cortex_val_ids.txt"
+    - "v2v_vox2cortex_test_ids.txt"

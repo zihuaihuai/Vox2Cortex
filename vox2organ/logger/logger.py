@@ -15,10 +15,13 @@ import inspect
 import json
 
 import torch
-import wandb
 import pandas as pd
 import numpy as np
 import nibabel as nib
+try:
+    import wandb
+except ModuleNotFoundError:
+    wandb = None
 
 import matplotlib.pyplot as plt
 
@@ -62,6 +65,8 @@ def wandb_test_summary(
     exp_name: str
 ):
     """ Send test results to wandb """
+    if wandb is None:
+        raise RuntimeError("wandb is not installed.")
     api = wandb.Api()
     run = api.run(f"{user}/{project}/{exp_name}")
 
@@ -383,7 +388,10 @@ def init_wandb_run(**wandb_args):
     finish_wandb_run()
 
     # New run
-    _wandb_run = wandb.init(**wandb_args)
+    if wandb is None:
+        _wandb_run = None
+    else:
+        _wandb_run = wandb.init(**wandb_args)
 
 
 def set_loglevel(level):
@@ -401,7 +409,10 @@ def init_wandb(**wandb_args):
     """
     global _wandb_run
 
-    _wandb_run = wandb.init(**wandb_args)
+    if wandb is None:
+        _wandb_run = None
+    else:
+        _wandb_run = wandb.init(**wandb_args)
 
 
 def finish_wandb_run():

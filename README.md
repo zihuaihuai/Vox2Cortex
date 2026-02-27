@@ -57,6 +57,21 @@ For information about command-line options see
     python3 main.py --help
 ```
 
+### voxels2vertices-compatible workflow
+This repo now includes top-level `train.py` and `inference.py` wrappers so you can run Vox2Cortex with a workflow matching `brainscores/voxels2vertices`:
+```
+python train.py
+python inference.py --input INPUT_NIFTI_OR_DIR --output-dir OUTPUT_DIR --ckpt EXPERIMENT_CHECKPOINT
+```
+Key points:
+- `train.py` reads `config.yml` (or `V2V_CONFIG`) and writes train/val/test split files directly into `paths.training_root`.
+- Training data format follows `voxels2vertices` `svf` branch exports:
+  - `<base>_hemi-L.nii.gz` and `<base>_hemi-LfromR.nii.gz`
+  - `<base>_L_fs_white.surf.gii`, `<base>_L_fs_pial.surf.gii`
+  - `<base>_LfromR_fs_white.surf.gii`, `<base>_LfromR_fs_pial.surf.gii`
+- Model architecture remains the existing Vox2Cortex `V2C-Flow-S` setup.
+- GPU memory can be capped via `VOX2CORTEX_MAX_VRAM_GB` (default used by wrappers: `48`).
+
 ### Models and parameters
 Training a UNetFlow model works similarly, see `vox2organ/params/groups.py` for implemented models. A list of all available parameters and their default values is in `vox2organ/params/default.py`. Parameters are overwritten in the following sequential manner: `CLI` -> `vox2organ/main.py` -> `vox2organ/params/groups.py` -> `vox2organ/params/default.py`. That is, a parameter specified in `main.py` overwrites parameter groups and default parameters etc.
 

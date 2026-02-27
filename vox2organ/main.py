@@ -61,6 +61,40 @@ mode_handler = {
 }
 
 
+def _apply_vram_cap_from_env(device_name):
+    """Optionally cap process VRAM usage via VOX2CORTEX_MAX_VRAM_GB."""
+    cap_gb = os.environ.get("VOX2CORTEX_MAX_VRAM_GB")
+    if cap_gb is None:
+        return
+    if not torch.cuda.is_available():
+        return
+    try:
+        req_gb = float(cap_gb)
+        if req_gb <= 0:
+            return
+        dev = torch.device(device_name)
+        dev_idx = dev.index if dev.index is not None else torch.cuda.current_device()
+        total_gb = torch.cuda.get_device_properties(dev_idx).total_memory / (1024.0 ** 3)
+        fraction = min(req_gb / total_gb, 1.0)
+        if fraction < 1.0:
+            torch.cuda.set_per_process_memory_fraction(fraction, device=dev_idx)
+            log.info(
+                "Applied VRAM cap %.2f GB on %s (%.2f%% of %.2f GB).",
+                req_gb,
+                device_name,
+                100.0 * fraction,
+                total_gb,
+            )
+        else:
+            log.info(
+                "Requested VRAM cap %.2f GB >= device memory %.2f GB; no cap applied.",
+                req_gb,
+                total_gb,
+            )
+    except Exception as e:
+        log.warning("Could not apply VOX2CORTEX_MAX_VRAM_GB=%r: %s", cap_gb, e)
+
+
 def single_experiment(hyper_ps, mode, resume):
     """ Run a single experiment.
     """
@@ -81,6 +115,7 @@ def single_experiment(hyper_ps, mode, resume):
         isinstance(hps['DEVICE'], str)
     ) else hps['DEVICE'][0]
     torch.cuda.set_device(main_device)
+    _apply_vram_cap_from_env(main_device)
 
     # Potentially overfit
     if hps['OVERFIT']:

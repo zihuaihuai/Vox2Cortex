@@ -11,6 +11,7 @@ V2V_* environment overrides in the same style as voxels2vertices.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import random
 import subprocess
@@ -188,6 +189,41 @@ def _as_device_list(device_cfg: Any) -> list[str]:
     return ["cuda:0"]
 
 
+def _missing_required_modules() -> list[str]:
+    required = [
+        "torch",
+        "torch_geometric",
+        "pytorch3d",
+    ]
+    missing = []
+    for mod in required:
+        if importlib.util.find_spec(mod) is None:
+            missing.append(mod)
+    return missing
+
+
+def _preflight_or_exit(repo_root: Path) -> None:
+    missing = _missing_required_modules()
+    if not missing:
+        return
+
+    wheel_path = repo_root / "docker" / "pytorch3d-0.6.1-cp39-cp39-linux_x86_64.whl"
+    msg = [
+        "Missing required Python packages for Vox2Cortex: " + ", ".join(missing),
+        "Install dependencies in the active env before running train.py.",
+        "Suggested commands:",
+        "  pip install torch-scatter torch-sparse torch-cluster torch-spline-conv -f https://data.pyg.org/whl/torch-2.1.0+cu121.html",
+        "  pip install torch-geometric",
+    ]
+    if wheel_path.exists():
+        msg.append(f"  pip install {wheel_path}")
+    else:
+        msg.append("  ./setup_pytorch3d.sh")
+    msg.append("Then verify with: ./verify_env.sh")
+
+    raise RuntimeError("\n".join(msg))
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train Vox2Cortex with voxels2vertices-style config.")
     parser.add_argument("--config", default=None, help="Path to config.yml (default: V2V_CONFIG or ./config.yml)")
@@ -200,6 +236,7 @@ def main() -> int:
     args = parse_args()
 
     repo_root = Path(__file__).resolve().parent
+    _preflight_or_exit(repo_root)
     config_path = Path(
         args.config
         or os.environ.get("V2V_CONFIG", str(repo_root / "config.yml"))

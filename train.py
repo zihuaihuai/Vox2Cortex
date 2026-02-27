@@ -202,10 +202,49 @@ def _missing_required_modules() -> list[str]:
     return missing
 
 
+def _check_torch_pytorch3d_linking() -> str | None:
+    """Return an error string if torch/pytorch3d compiled extensions are not linkable."""
+    try:
+        import torch  # noqa: F401
+    except Exception as e:
+        return f"Could not import torch: {e}"
+
+    try:
+        import pytorch3d  # noqa: F401
+    except Exception as e:
+        return f"Could not import pytorch3d: {e}"
+
+    try:
+        # Force-load compiled C++/CUDA extension.
+        from pytorch3d import _C  # noqa: F401
+    except Exception as e:
+        return str(e)
+
+    return None
+
+
 def _preflight_or_exit(repo_root: Path) -> None:
     missing = _missing_required_modules()
     if not missing:
-        return
+        link_err = _check_torch_pytorch3d_linking()
+        if link_err is None:
+            return
+        wheel_path = repo_root / "docker" / "pytorch3d-0.6.1-cp39-cp39-linux_x86_64.whl"
+        msg = [
+            "Torch/PyTorch3D binary linkage check failed.",
+            f"Error: {link_err}",
+            "This usually means torch/pytorch3d were built for different CUDA builds,",
+            "or torch CUDA libs are missing from runtime loader path.",
+            "Suggested fix:",
+            "  1) Reinstall GPU torch matching your CUDA driver/toolkit.",
+            "  2) Reinstall pytorch3d against that torch (prefer source build of fabibo3 fork).",
+            "  3) Ensure LD_LIBRARY_PATH contains:",
+            "       $CONDA_PREFIX/lib:$CONDA_PREFIX/lib/python3.9/site-packages/torch/lib",
+        ]
+        if wheel_path.exists():
+            msg.append(f"  Optional quick test wheel: pip install {wheel_path}")
+        msg.append("Then verify with: python -c 'from pytorch3d import _C; print(\"ok\")'")
+        raise RuntimeError("\n".join(msg))
 
     wheel_path = repo_root / "docker" / "pytorch3d-0.6.1-cp39-cp39-linux_x86_64.whl"
     msg = [

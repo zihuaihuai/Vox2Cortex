@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# ===== Job meta =====
+#$ -N v2c-train
+#$ -wd /host/bb-compxg-01/export03/data/enning/Documents/Vox2Cortex
+#$ -o /host/bb-compxg-01/export03/data/enning/Documents/Vox2Cortex/sge-$JOB_ID.out
+#$ -e /host/bb-compxg-01/export03/data/enning/Documents/Vox2Cortex/sge-$JOB_ID.err
+#$ -j y
+#$ -V
+#$ -cwd
+#$ -q mica.q
+#$ -l hostname=bb-compxg-01
+#$ -l h_rt=72:00:00
+
+# ===== CPU & RAM =====
+#$ -pe smp 16
+#$ -l h_vmem=8G
+
+# ===== GPUs =====
+export CUDA_DEVICE_ORDER=PCI_BUS_ID
+export CUDA_VISIBLE_DEVICES=4
+
+# ===== NCCL / threading hygiene =====
+export NCCL_DEBUG=WARN
+export NCCL_IB_DISABLE=1
+export NCCL_SOCKET_IFNAME=bond0
+export NCCL_NVML_DISABLE=1
+export PYTORCH_NCCL_BLOCKING_WAIT=1
+
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export NUMEXPR_NUM_THREADS=1
+export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1
+export PYTORCH_NUM_THREADS=1
+export PYTHONUNBUFFERED=1
+
+# ===== Env =====
+source /host/cassio/export03/data/opt/miniconda3/bin/activate v2v2_vox2cortex
+
+# Ensure torch CUDA libs are visible for pytorch3d C++ extension loading
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$CONDA_PREFIX/lib/python3.9/site-packages/torch/lib:${LD_LIBRARY_PATH}"
+
+# ===== Vox2Cortex data/split paths =====
+# Read-only training data from voxels2vertices svf export
+export V2V_PATHS__TRAINING_ROOT="/host/bb-compxg-01/export03/data/jordand/voxels2vertices/trainingdata"
+# Writable split files local to this repo
+export V2V_VOX2CORTEX__SPLIT_DIR="/host/bb-compxg-01/export03/data/enning/Documents/Vox2Cortex/splits"
+# Optional run naming and GPU cap
+export V2V_VOX2CORTEX__EXPERIMENT_NAME="vox2cortex_v2v"
+export V2V_VOX2CORTEX__MAX_VRAM_GB="48"
+
+mkdir -p "$V2V_VOX2CORTEX__SPLIT_DIR"
+
+echo "Host: $(hostname)"
+echo "Conda env: $CONDA_PREFIX"
+echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
+python -c "import torch; print('torch', torch.__version__, 'cuda', torch.version.cuda, 'avail', torch.cuda.is_available())"
+python -c "from pytorch3d import _C; print('pytorch3d _C OK')"
+
+# ===== Launch =====
+python train.py

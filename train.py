@@ -329,6 +329,7 @@ def main() -> int:
     exp_base_dir = str(v2c_cfg.get("experiment_base_dir", "../experiments"))
     run_test_after_train = bool(v2c_cfg.get("run_test_after_train", True))
     max_vram_gb = float(v2c_cfg.get("max_vram_gb", 48))
+    graph_checkpointing = bool(v2c_cfg.get("graph_checkpointing", False))
     epochs = int(args.epochs if args.epochs is not None else train_cfg.get("epochs", 500))
     pretrained_model = v2c_cfg.get("pretrained_model", None)
 
@@ -359,6 +360,7 @@ def main() -> int:
     env["VOX2CORTEX_V2V_DATA_ROOT"] = str(training_root)
     env["VOX2CORTEX_V2V_SPLIT_DIR"] = str(split_dir)
     env["VOX2CORTEX_MAX_VRAM_GB"] = str(max_vram_gb)
+    env["VOX2CORTEX_GRAPH_CHECKPOINTING"] = "1" if graph_checkpointing else "0"
 
     print("Running:", " ".join(cmd))
     if args.dry_run:

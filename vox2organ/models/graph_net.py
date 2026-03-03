@@ -4,11 +4,13 @@
 __author__ = "Fabi Bongratz"
 __email__ = "fabi.bongratz@gmail.com"
 
+import os
 from typing import Union, Tuple, Sequence
 
 import torch
 from torch import nn
 from torch.cuda.amp import autocast
+from torch.utils.checkpoint import checkpoint
 from pytorch3d.structures import MeshesXD
 
 import logger
@@ -44,6 +46,33 @@ def solve_ode(n_steps, V0, f, solver):
 
 # Autocast should be off for pytorch3d convs
 autocast_on = True
+
+
+def _graph_checkpointing_enabled(features: torch.Tensor) -> bool:
+    """Enable activation checkpointing when explicitly requested."""
+    flag = os.environ.get("VOX2CORTEX_GRAPH_CHECKPOINTING", "")
+    return (
+        flag.lower() in {"1", "true", "yes", "on"}
+        and torch.is_grad_enabled()
+        and features.requires_grad
+    )
+
+
+def _run_graph_block(block, features, edges):
+    return block(features, edges)
+
+
+def _maybe_checkpoint_graph_block(block, features, edges):
+    if not _graph_checkpointing_enabled(features):
+        return _run_graph_block(block, features, edges)
+    try:
+        return checkpoint(
+            lambda f: _run_graph_block(block, f, edges),
+            features,
+            use_reentrant=False,
+        )
+    except TypeError:
+        return checkpoint(lambda f: _run_graph_block(block, f, edges), features)
 
 class SurfaceDeform(nn.Module):
     """ Module implementing the differential equation dV/dt = f(t, V0).
@@ -190,8 +219,8 @@ class SurfaceDeform(nn.Module):
             batch_size * V, -1
         )
         for f2f in self.f2f_res:
-            latent_features_packed = f2f(
-                latent_features_packed, edges_packed
+            latent_features_packed = _maybe_checkpoint_graph_block(
+                f2f, latent_features_packed, edges_packed
             )
 
         # Store output features
@@ -281,12 +310,14 @@ class GraphDecoder(nn.Module):
 
         # Initial creation of latent features (packed)
         with autocast(enabled=autocast_on):
-            latent_features = self.gnn_block_0(
-                torch.cat(
-                    [input_meshes.verts_packed(),
-                     input_meshes.verts_features_packed()],
-                    dim=-1
-                ),
+            initial_features = torch.cat(
+                [input_meshes.verts_packed(),
+                 input_meshes.verts_features_packed()],
+                dim=-1
+            )
+            latent_features = _maybe_checkpoint_graph_block(
+                self.gnn_block_0,
+                initial_features,
                 input_meshes.edges_packed()
             )
 

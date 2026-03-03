@@ -70,7 +70,7 @@ logging:
 
 # Vox2Cortex compatibility layer (used by ./train.py and ./inference.py)
 vox2cortex:
-  group: "V2C-Flow-S"
+  group: "V2C-Flow-S-small"
   experiment_name: "vox2cortex_v2v"
   experiment_base_dir: "../experiments"
   device: "cuda:0"

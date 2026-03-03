@@ -323,7 +323,7 @@ def main() -> int:
         n_train, n_val, n_test = write_split_files(ids, split_dir, split_ratio, split_seed, split_files)
     print(f"Wrote split files in {split_dir}: train={n_train}, val={n_val}, test={n_test}")
 
-    group = str(v2c_cfg.get("group", "V2C-Flow-S"))
+    group = str(v2c_cfg.get("group", "V2C-Flow-S-small"))
     device_list = _as_device_list(v2c_cfg.get("device", "cuda:0"))
     exp_name = str(v2c_cfg.get("experiment_name", "vox2cortex_v2v"))
     exp_base_dir = str(v2c_cfg.get("experiment_base_dir", "../experiments"))

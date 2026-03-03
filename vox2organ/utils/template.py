@@ -21,7 +21,9 @@ import logger
 from utils.coordinate_transform import transform_mesh_affine
 
 
-TEMPLATE_PATH = "../supplementary_material/"
+TEMPLATE_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "supplementary_material")
+)
 
 log = logger.get_std_logger(__name__)
 
